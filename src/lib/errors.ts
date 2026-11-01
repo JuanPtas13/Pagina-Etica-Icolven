@@ -44,11 +44,22 @@ export function explainError(err: unknown, fallback = 'Ocurrió un error inesper
   if (e.code === '42501' || msg.includes('row-level security') || msg.includes('permission denied') || e.status === 403) {
     return 'No tienes permiso para realizar esta acción. Si crees que es un error, comprueba que tu cuenta esté activa.';
   }
-  if (e.code === '23505' || msg.includes('duplicate key')) return 'Ese registro ya existe.';
-  if (e.code === '23503') return 'No se puede completar la acción porque hay registros relacionados.';
-  if (e.code === '23514' || e.code === '22P02') return 'Alguno de los datos enviados no es válido.';
+  if (e.code === '23505' || msg.includes('duplicate key')) {
+    return msg.includes('slug') || msg.includes('projects_slug')
+      ? 'Ya existe un proyecto con ese slug. Elige otro.'
+      : 'Ese registro ya existe.';
+  }
+  if (e.code === '23502') return 'Falta completar un dato obligatorio. Revisa la información del formulario.';
+  if (e.code === '23503') return 'La categoría seleccionada ya no existe o no se puede usar. Vuelve a seleccionarla.';
+  if (e.code === '23514' || e.code === '22P02') return 'El estado o alguno de los datos enviados no es válido.';
+  if (e.code === 'PGRST204' || e.code === 'PGRST205' || e.code === '42703' || e.code === '42P01') {
+    return 'La estructura de la base de datos no coincide con la aplicación. Actualiza el esquema de Supabase y vuelve a intentarlo.';
+  }
   if (e.code === 'PGRST116' || msg.includes('not found') || msg.includes('object not found')) {
     return 'No se encontró el elemento solicitado.';
+  }
+  if (e.status === 400) {
+    return 'Supabase rechazó los datos enviados. Revisa los campos e inténtalo de nuevo; consulta el detalle técnico en la consola del navegador.';
   }
   if (msg.includes('exceeded the maximum allowed size') || msg.includes('payload too large') || e.status === 413) {
     return 'El archivo supera el tamaño máximo permitido.';

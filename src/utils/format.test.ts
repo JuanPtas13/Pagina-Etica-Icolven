@@ -72,4 +72,10 @@ describe('explainError', () => {
   it('traduce credenciales incorrectas', () => {
     expect(explainError({ message: 'Invalid login credentials' })).toMatch(/correo|contraseña/i);
   });
+  it('explica rechazos comunes al guardar proyectos', () => {
+    expect(explainError({ code: '23505', message: 'duplicate key value violates unique constraint "projects_slug_key"' })).toMatch(/slug/i);
+    expect(explainError({ code: '23503' })).toMatch(/categoría/i);
+    expect(explainError({ code: 'PGRST204' })).toMatch(/estructura de la base de datos/i);
+    expect(explainError({ status: 400 })).toMatch(/Supabase rechazó los datos enviados/i);
+  });
 });
