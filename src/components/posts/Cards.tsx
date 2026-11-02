@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Heart, MessageCircle, FileText } from 'lucide-react';
+import { ArrowRight, Film, Heart, MessageCircle, FileText } from 'lucide-react';
 import { SignedImage } from '../media/SignedImage';
 import { classifyMedia } from '../../utils/media';
 import { countOf, excerpt, formatDate } from '../../utils/format';
@@ -28,11 +28,37 @@ function firstImagePath(post: Post): string | null {
   return media.find((m) => classifyMedia(m) === 'image' && m.storage_path)?.storage_path ?? null;
 }
 
+function PostPreview({ post }: { post: Post }) {
+  const media = [...(post.post_media ?? [])].sort((a, b) => a.position - b.position);
+  const hasVideo = media.some((item) => classifyMedia(item) === 'video');
+
+  if (hasVideo) {
+    return (
+      <div className="post-preview post-preview--video" aria-hidden="true">
+        <Film size={32} />
+        <span>Vista previa de video</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="post-preview post-preview--text" aria-hidden="true">
+      <FileText size={26} />
+      <p>{post.body ? excerpt(post.body, 105) : 'Publicación de texto'}</p>
+    </div>
+  );
+}
+
 export function PostCard({ post, layout = 'vertical' }: { post: Post; layout?: 'vertical' | 'horizontal' }) {
   const comments = countOf(post.comments);
+  const imagePath = firstImagePath(post);
   return (
     <Link to={`/publicaciones/${post.id}`} className={`card card--post card--${layout}`}>
-      <SignedImage path={firstImagePath(post)} alt="" decorative className="card__img" />
+      {imagePath ? (
+        <SignedImage path={imagePath} alt="" decorative className="card__img" />
+      ) : (
+        <PostPreview post={post} />
+      )}
       <div className="card__body">
         <h3 className="card__title">{post.title}</h3>
         <p className="card__date">

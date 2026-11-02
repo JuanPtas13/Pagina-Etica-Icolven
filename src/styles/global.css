@@ -125,6 +125,11 @@ code { background: var(--blue-soft); padding: 0.1em 0.4em; border-radius: 4px; }
     linear-gradient(120deg, var(--blue) 0%, #0a3f73 55%, var(--blue-2) 100%);
   padding: 72px 0 64px;
 }
+.hero--home {
+  background:
+    linear-gradient(110deg, rgba(0, 51, 102, 0.9), rgba(15, 76, 129, 0.7)),
+    url('/hero-estudiantes.jpg') center 46% / cover no-repeat;
+}
 .hero--short { padding: 44px 0 40px; }
 .hero--cover { padding: 52px 0 48px; }
 .hero__bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.28; }
@@ -149,7 +154,15 @@ code { background: var(--blue-soft); padding: 0.1em 0.4em; border-radius: 4px; }
   transition: transform 0.15s, box-shadow 0.15s;
 }
 .card:hover { transform: translateY(-2px); color: inherit; box-shadow: 0 2px 4px rgba(0, 51, 102, 0.08), 0 10px 24px rgba(0, 51, 102, 0.12); }
-.card__img, .card .img-placeholder { width: 100%; height: 150px; object-fit: cover; display: block; }
+.card__img, .card .img-placeholder, .post-preview { width: 100%; height: 150px; object-fit: cover; display: block; }
+.post-preview {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  padding: 18px; overflow: hidden; color: var(--blue); text-align: center;
+  background: linear-gradient(135deg, #e6eef7, #cbdced);
+}
+.post-preview--video { color: var(--white); background: linear-gradient(135deg, var(--blue), var(--blue-2)); }
+.post-preview span { font-size: 0.78rem; font-weight: 700; }
+.post-preview p { max-width: 100%; font-size: 0.84rem; line-height: 1.4; }
 .card__body { display: flex; flex-direction: column; gap: 6px; padding: 14px; flex: 1; }
 .card__title { font-size: 1rem; font-weight: 700; color: var(--blue); line-height: 1.25; }
 .card__text { font-size: 0.85rem; color: var(--muted); }
@@ -158,7 +171,7 @@ code { background: var(--blue-soft); padding: 0.1em 0.4em; border-radius: 4px; }
 .card__meta span { display: inline-flex; align-items: center; gap: 4px; }
 .card--project .card__meta { justify-content: space-between; color: var(--blue-2); }
 .card--horizontal { flex-direction: row; }
-.card--horizontal .card__img, .card--horizontal .img-placeholder { width: 160px; height: auto; min-height: 110px; flex-shrink: 0; }
+.card--horizontal .card__img, .card--horizontal .img-placeholder, .card--horizontal .post-preview { width: 160px; height: auto; min-height: 110px; flex-shrink: 0; }
 
 .img-placeholder { background: linear-gradient(135deg, var(--blue-soft), #d5e3f2); display: flex; align-items: center; justify-content: center; color: var(--muted); }
 .img-placeholder--loading { animation: pulse 1.4s ease-in-out infinite; }
@@ -276,7 +289,10 @@ progress { width: 100%; height: 10px; accent-color: var(--blue-2); }
 .auth__title { font-size: 1.4rem; color: var(--blue); }
 .auth__subtitle { font-size: 0.9rem; color: var(--muted); }
 .auth__foot { text-align: center; font-size: 0.85rem; color: var(--muted); }
-.auth__aside { display: flex; align-items: center; padding: 48px; color: var(--white); background: linear-gradient(160deg, rgba(0, 51, 102, 0.92), rgba(15, 76, 129, 0.85)), var(--blue); }
+.auth__aside {
+  display: flex; align-items: center; padding: 48px; color: var(--white);
+  background: linear-gradient(160deg, rgba(0, 51, 102, 0.82), rgba(15, 76, 129, 0.7)), url('/login-biblioteca.jpg') center / cover no-repeat;
+}
 .auth__aside blockquote { margin: 0; font-family: var(--font-serif); font-style: italic; font-size: clamp(1.5rem, 3vw, 2.2rem); line-height: 1.3; max-width: 360px; }
 .auth__aside cite { display: block; margin-top: 16px; font-size: 0.95rem; opacity: 0.85; }
 
@@ -360,12 +376,15 @@ progress { width: 100%; height: 10px; accent-color: var(--blue-2); }
 
   .grid--2, .grid--3 { grid-template-columns: minmax(0, 1fr); }
   .card--horizontal { flex-direction: column; }
-  .card--horizontal .card__img, .card--horizontal .img-placeholder { width: 100%; height: 150px; }
+  .card--horizontal .card__img, .card--horizontal .img-placeholder, .card--horizontal .post-preview { width: 100%; height: 150px; }
   .media__images--2, .media__images--3 { grid-template-columns: minmax(0, 1fr); }
   .hero { padding: 48px 0 40px; }
 
   .auth { grid-template-columns: minmax(0, 1fr); }
   .auth__aside { display: none; }
+  .auth__panel {
+    background: linear-gradient(160deg, rgba(0, 51, 102, 0.72), rgba(15, 76, 129, 0.68)), url('/login-biblioteca.jpg') center / cover no-repeat;
+  }
 
   .admin { grid-template-columns: minmax(0, 1fr); }
   .admin__sidebar { position: fixed; inset: 0 auto 0 0; width: 250px; z-index: 60; transform: translateX(-100%); transition: transform 0.2s; }

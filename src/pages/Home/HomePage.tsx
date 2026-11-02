@@ -12,7 +12,7 @@ export function HomePage() {
 
   return (
     <>
-      <section className="hero">
+      <section className="hero hero--home">
         <div className="container hero__inner">
           <h1 className="hero__title">Ideas que transforman.</h1>
           <p className="hero__text">
