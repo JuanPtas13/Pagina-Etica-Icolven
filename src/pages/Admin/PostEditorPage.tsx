@@ -14,6 +14,7 @@ import { Alert, ErrorState, Spinner } from '../../components/ui/States';
 import { MediaKindIcon } from '../../components/media/MediaGallery';
 import { CONTENT_STATUS_OPTIONS } from './shared';
 import type { ContentStatus, PostMedia } from '../../types/database';
+import { isProjectAreaCategory } from '../../utils/projectAreas';
 
 interface UploadItem {
   key: string;
@@ -180,7 +181,7 @@ export function PostEditorPage() {
 
   const post = useAsync(() => (isNew ? Promise.resolve(null) : getPostForEdit(postId)), [postId, isNew]);
   const projects = useAsync(listAllProjects, []);
-  const categories = useAsync(() => listCategories().catch(() => []), []);
+  const categories = useAsync(listCategories, []);
 
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
@@ -195,10 +196,11 @@ export function PostEditorPage() {
       setTitle(post.data.title);
       setBody(post.data.body ?? '');
       setProjectId(post.data.project_id);
-      setCategoryId(post.data.category_id ?? '');
+      const savedCategory = categories.data?.find((category) => category.id === post.data?.category_id);
+      setCategoryId(savedCategory && !isProjectAreaCategory(savedCategory.name) ? savedCategory.id : '');
       setStatus(post.data.status);
     }
-  }, [post.data]);
+  }, [post.data, categories.data]);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -255,7 +257,7 @@ export function PostEditorPage() {
             <label htmlFor="po-cat" className="label">Categoría (opcional)</label>
             <select id="po-cat" className="input" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
               <option value="">Sin categoría</option>
-              {(categories.data ?? []).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              {(categories.data ?? []).filter((category) => !isProjectAreaCategory(category.name)).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
           <div className="field">

@@ -75,7 +75,7 @@ Solo URLs firmadas (1 h, caché en memoria y renovación automática; se vuelve 
 
 ## Suposiciones que debes verificar (no se pudieron comprobar)
 
-1. **`categories`**: sus columnas no estaban descritas; se asume `id` y `name`. Las áreas Ética/Filosofía localizan la categoría por nombre (sin acentos).
+1. **`categories`**: sus columnas no estaban descritas; se asume `id`, `name` y `slug`. Las áreas generales Ética, Filosofía y Gabinete se asignan opcionalmente desde el formulario de Proyectos; al guardar, la aplicación reutiliza o crea la categoría correspondiente. Los proyectos sin área no aparecen en esas secciones.
 2. **`post_media.media_type`**: se escribe `image`, `video`, `document` o `link`. Si existe una restricción CHECK con otros valores, la subida fallará con «datos no válidos»: ajusta `ALLOWED_UPLOAD_TYPES`/`classifyMedia`.
 3. **`posts.id`** se genera en el cliente (UUID) para subir archivos con la carpeta correcta; requiere que la política permita insertar con `id` explícito.
 4. **Borrado de comentario propio:** se intenta `update status='deleted'`. Si las políticas solo permiten `delete`, hay que cambiarlo en `deleteOwnComment`.
@@ -99,7 +99,7 @@ Si alguna suposición falla por una política o restricción, la solución debe 
 3. Confirma el correo → perfil `active` → comenta, da y quita «Me gusta».
 4. Suspende esa cuenta desde `/admin/usuarios` → comprueba que comentar/reaccionar falla con mensaje claro.
 5. Con una cuenta miembro abre `/admin` → «Acceso restringido».
-6. Como profesor: crea categorías «Ética» y «Filosofía», un proyecto con portada, una publicación como borrador; verifica que **no** aparece en modo visitante; publícala y adjunta imagen, PDF y enlace.
+6. Como profesor: crea un proyecto asignándole opcionalmente Ética, Filosofía o Gabinete desde Proyectos; verifica que solo aparezca en la sección asignada (los proyectos sin área no aparecen en esas secciones). Crea una publicación como borrador; verifica que **no** aparece en modo visitante; publícala y adjunta imagen, PDF y enlace.
 7. Cierra sesión y confirma que desaparecen las acciones autenticadas.
 8. Prueba en móvil (≤ 780 px) y escritorio.
 

@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import { AppError, toAppError } from '../lib/errors';
 import { isValidSlug, isValidUuid, slugify } from '../utils/format';
+import { getProjectArea, isProjectAreaCategory, PROJECT_AREAS, type ProjectArea } from '../utils/projectAreas';
 import { buildStoragePath, removeFiles, uploadFile } from './storage';
 import { ALLOWED_UPLOAD_TYPES, COVER_TYPES, validateUpload } from '../utils/media';
 import { fetchDisplayNames } from './participation';
@@ -68,6 +69,16 @@ async function getCategorySlug(name: string, excludeId?: string): Promise<string
 export async function saveCategory(input: { id?: string; name: string }): Promise<Category> {
   const name = input.name.trim();
   if (!name) throw new AppError('El nombre de la categoría es obligatorio.');
+  if (getProjectArea(name)) {
+    throw new AppError('Las áreas generales se asignan desde el formulario de proyectos.');
+  }
+  if (input.id) {
+    const { data: current, error: currentError } = await supabase.from('categories').select('name').eq('id', input.id).maybeSingle();
+    if (currentError) throw toAppError(currentError, 'No se pudo comprobar la categoría.');
+    if (current && getProjectArea(current.name)) {
+      throw new AppError('Las áreas generales se asignan desde el formulario de proyectos.');
+    }
+  }
   const slug = await getCategorySlug(name, input.id);
   if (input.id) {
     const { data, error } = await supabase.from('categories').update({ name, slug }).eq('id', input.id).select('*');
@@ -80,6 +91,11 @@ export async function saveCategory(input: { id?: string; name: string }): Promis
 }
 
 export async function deleteCategory(id: string): Promise<void> {
+  const { data: category, error: categoryError } = await supabase.from('categories').select('name').eq('id', id).maybeSingle();
+  if (categoryError) throw toAppError(categoryError, 'No se pudo comprobar la categoría.');
+  if (category && getProjectArea(category.name)) {
+    throw new AppError('Las áreas generales se asignan desde el formulario de proyectos.');
+  }
   const { data, error } = await supabase.from('categories').delete().eq('id', id).select('id');
   if (error) throw toAppError(error, 'No se pudo eliminar la categoría. Puede estar en uso por proyectos o publicaciones.');
   requireRows(data, 'No tienes permiso para eliminar esta categoría.');
@@ -110,8 +126,29 @@ export interface ProjectInput {
   slug: string;
   description: string;
   status: ContentStatus;
-  category_id: string | null;
+  area?: ProjectArea | null;
+  category_id?: string | null;
   cover_path?: string | null;
+}
+
+async function getProjectAreaCategoryId(area: ProjectArea | null): Promise<string | null> {
+  if (!area) return null;
+  const areaDefinition = PROJECT_AREAS.find((item) => item.value === area);
+  if (!areaDefinition) throw new AppError('Selecciona un área válida para el proyecto.');
+
+  const { data: categories, error: listError } = await supabase.from('categories').select('id, name');
+  if (listError) throw toAppError(listError, 'No se pudieron cargar las áreas del proyecto.');
+  const existing = (categories ?? []).find((category) => getProjectArea(category.name) === area);
+  if (existing) return existing.id;
+
+  const slug = await getCategorySlug(areaDefinition.label);
+  const { data, error } = await supabase
+    .from('categories')
+    .insert({ name: areaDefinition.label, slug })
+    .select('id')
+    .single();
+  if (error) throw toAppError(error, 'No se pudo crear el área del proyecto.');
+  return data.id;
 }
 
 async function draftPublishedPosts(projectId: string): Promise<number> {
@@ -151,7 +188,11 @@ export async function saveProject(input: ProjectInput, userId: string): Promise<
     slug: input.slug,
     description: input.description.trim() || null,
     status: input.status,
-    category_id: input.category_id,
+    ...(input.area !== undefined
+      ? { category_id: await getProjectAreaCategoryId(input.area) }
+      : input.id
+        ? {}
+        : { category_id: input.category_id ?? null }),
     ...(input.cover_path !== undefined ? { cover_path: input.cover_path } : {}),
   };
 
@@ -236,6 +277,18 @@ export async function savePost(input: PostInput, userId: string, previousStatus?
   const title = input.title.trim();
   if (!title) throw new AppError('El título es obligatorio.');
   if (!input.project_id) throw new AppError('Selecciona el proyecto al que pertenece la publicación.');
+  if (input.category_id) {
+    const { data: category, error } = await supabase
+      .from('categories')
+      .select('name')
+      .eq('id', input.category_id)
+      .maybeSingle();
+    if (error) throw toAppError(error, 'No se pudo comprobar la categoría de la publicación.');
+    if (!category) throw new AppError('La categoría seleccionada ya no existe.');
+    if (isProjectAreaCategory(category.name)) {
+      throw new AppError('Ética, Filosofía y Gabinete se asignan a proyectos, no a publicaciones.');
+    }
+  }
   if (input.status === 'published') {
     const { data: project, error } = await supabase
       .from('projects')

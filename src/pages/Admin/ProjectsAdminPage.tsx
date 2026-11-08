@@ -9,6 +9,7 @@ import { Alert, EmptyState, ErrorState, Spinner } from '../../components/ui/Stat
 import { SignedImage } from '../../components/media/SignedImage';
 import { CONTENT_STATUS_OPTIONS, StatusBadge } from './shared';
 import type { ContentStatus, Project } from '../../types/database';
+import { getProjectArea, PROJECT_AREAS, type ProjectArea } from '../../utils/projectAreas';
 
 interface FormState {
   id?: string;
@@ -17,16 +18,28 @@ interface FormState {
   slugTouched: boolean;
   description: string;
   status: ContentStatus;
-  category_id: string;
+  area: ProjectArea | '';
+  categoryId: string | null;
+  areaChanged: boolean;
   cover_path: string | null;
 }
 
-const EMPTY: FormState = { title: '', slug: '', slugTouched: false, description: '', status: 'draft', category_id: '', cover_path: null };
+const EMPTY: FormState = {
+  title: '',
+  slug: '',
+  slugTouched: false,
+  description: '',
+  status: 'draft',
+  area: '',
+  categoryId: null,
+  areaChanged: false,
+  cover_path: null,
+};
 
 export function ProjectsAdminPage() {
   const { user } = useAuth();
   const projects = useAsync(listAllProjects, []);
-  const categories = useAsync(() => listCategories().catch(() => []), []);
+  const categories = useAsync(listCategories, []);
   const [form, setForm] = useState<FormState | null>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null);
@@ -35,7 +48,19 @@ export function ProjectsAdminPage() {
 
   function edit(p: Project) {
     setMessage(null);
-    setForm({ id: p.id, title: p.title, slug: p.slug, slugTouched: true, description: p.description ?? '', status: p.status, category_id: p.category_id ?? '', cover_path: p.cover_path });
+    const categoryName = categories.data?.find((category) => category.id === p.category_id)?.name;
+    setForm({
+      id: p.id,
+      title: p.title,
+      slug: p.slug,
+      slugTouched: true,
+      description: p.description ?? '',
+      status: p.status,
+      area: getProjectArea(categoryName),
+      categoryId: p.category_id,
+      areaChanged: false,
+      cover_path: p.cover_path,
+    });
   }
 
   async function onSubmit(e: FormEvent) {
@@ -48,7 +73,15 @@ export function ProjectsAdminPage() {
     setMessage(null);
     try {
       const saved = await saveProject(
-        { id: form.id, title: form.title, slug: form.slug, description: form.description, status: form.status, category_id: form.category_id || null },
+        {
+          id: form.id,
+          title: form.title,
+          slug: form.slug,
+          description: form.description,
+          status: form.status,
+          area: form.areaChanged || !form.id ? form.area || null : undefined,
+          category_id: form.categoryId,
+        },
         user.id,
       );
       // La portada requiere el UUID del proyecto como primera carpeta de la ruta.
@@ -93,6 +126,7 @@ export function ProjectsAdminPage() {
         {!form && <button type="button" className="btn btn--primary" onClick={() => { setMessage(null); setForm({ ...EMPTY }); }}>Nuevo proyecto</button>}
       </div>
       {message && <Alert kind={message.kind}>{message.text}</Alert>}
+      {categories.error && <ErrorState message={categories.error} onRetry={categories.reload} />}
 
       {form && (
         <form className="panel form" onSubmit={onSubmit} noValidate>
@@ -113,11 +147,15 @@ export function ProjectsAdminPage() {
           </div>
           <div className="form__cols">
             <div className="field">
-              <label htmlFor="p-cat" className="label">Categoría</label>
-              <select id="p-cat" className="input" value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })}>
-                <option value="">Sin categoría</option>
-                {(categories.data ?? []).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              <label htmlFor="p-area" className="label">Área general (opcional)</label>
+              <select id="p-area" className="input" value={form.area} onChange={(e) => setForm({ ...form, area: e.target.value as ProjectArea | '', areaChanged: true })}>
+                <option value="">Sin área</option>
+                {PROJECT_AREAS.map((area) => <option key={area.value} value={area.value}>{area.label}</option>)}
               </select>
+              <p className="form-hint">El proyecto aparecerá en la sección seleccionada. Si no eliges un área, solo aparecerá en Proyectos.</p>
+              {form.id && form.categoryId && !form.area && (
+                <p className="form-hint">La asignación actual se conservará si no cambias esta selección.</p>
+              )}
             </div>
             <div className="field">
               <label htmlFor="p-status" className="label">Estado</label>
@@ -149,12 +187,13 @@ export function ProjectsAdminPage() {
         <div className="table-wrap">
           <table className="table">
             <thead>
-              <tr><th>Proyecto</th><th>Estado</th><th>Publicaciones</th><th><span className="visually-hidden">Acciones</span></th></tr>
+              <tr><th>Proyecto</th><th>Área</th><th>Estado</th><th>Publicaciones</th><th><span className="visually-hidden">Acciones</span></th></tr>
             </thead>
             <tbody>
               {(projects.data ?? []).map((p) => (
                 <tr key={p.id}>
                   <td><strong>{p.title}</strong><br /><small className="muted">/{p.slug}</small></td>
+                  <td>{categories.data?.find((category) => category.id === p.category_id)?.name ?? '—'}</td>
                   <td><StatusBadge status={p.status} /></td>
                   <td>{countOf(p.posts)}</td>
                   <td className="table__actions">

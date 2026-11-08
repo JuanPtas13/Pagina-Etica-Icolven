@@ -4,6 +4,7 @@ import { listCategories } from '../../services/content';
 import { deleteCategory, saveCategory } from '../../services/admin';
 import { explainError } from '../../lib/errors';
 import { Alert, EmptyState, ErrorState, Spinner } from '../../components/ui/States';
+import { getProjectArea } from '../../utils/projectAreas';
 
 export function CategoriesAdminPage() {
   const categories = useAsync(listCategories, []);
@@ -43,7 +44,7 @@ export function CategoriesAdminPage() {
   return (
     <>
       <h1 className="admin__title">Categorías</h1>
-      <p className="muted">Las áreas «Ética» y «Filosofía» del sitio se alimentan de categorías con esos nombres.</p>
+      <p className="muted">Las áreas generales de proyectos (Ética, Filosofía y Gabinete) se asignan desde Proyectos. Aquí puedes administrar las demás categorías.</p>
       {message && <Alert kind={message.kind}>{message.text}</Alert>}
       <form className="form form--inline panel" onSubmit={onSubmit} noValidate>
         <div className="field">
@@ -59,14 +60,21 @@ export function CategoriesAdminPage() {
       ) : categories.error ? (
         <ErrorState message={categories.error} onRetry={categories.reload} />
       ) : (categories.data ?? []).length === 0 ? (
-        <EmptyState title="No hay categorías">Crea «Ética» y «Filosofía» para activar esas áreas del sitio.</EmptyState>
+        <EmptyState title="No hay categorías">Las áreas generales se crean al asignarlas a un proyecto. Puedes crear aquí otras categorías para organizar publicaciones.</EmptyState>
       ) : (
         <ul className="list-rows">
           {(categories.data ?? []).map((c) => (
             <li key={c.id}>
-              <span className="list-rows__main"><strong>{c.name}</strong></span>
-              <button type="button" className="btn btn--outline btn--sm" onClick={() => { setEditingId(c.id); setName(c.name); }}>Editar</button>
-              <button type="button" className="btn btn--outline btn--sm" onClick={() => void onDelete(c.id, c.name)}>Eliminar</button>
+              <span className="list-rows__main">
+                <strong>{c.name}</strong>
+                {getProjectArea(c.name) && <small className="muted">Área general; se asigna desde Proyectos.</small>}
+              </span>
+              {!getProjectArea(c.name) && (
+                <>
+                  <button type="button" className="btn btn--outline btn--sm" onClick={() => { setEditingId(c.id); setName(c.name); }}>Editar</button>
+                  <button type="button" className="btn btn--outline btn--sm" onClick={() => void onDelete(c.id, c.name)}>Eliminar</button>
+                </>
+              )}
             </li>
           ))}
         </ul>

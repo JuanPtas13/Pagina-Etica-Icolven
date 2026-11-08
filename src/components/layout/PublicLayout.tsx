@@ -112,7 +112,7 @@ export function PublicLayout() {
             <img src="/logo-icolven.jpg" alt="Colegio Adventista ICOLVEN, Medellín - Colombia" />
             <span>Colegio Adventista<br /><strong>ICOLVEN</strong></span>
           </div>
-          <p className="footer__legal">Instituto Colombo Venezolano ICOLVEN · Educación con propósito</p>
+          <p className="footer__legal">Colegio Adventista ICOLVEN · Educación con propósito</p>
         </div>
       </footer>
     </div>

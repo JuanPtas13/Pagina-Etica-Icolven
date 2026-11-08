@@ -14,6 +14,7 @@ const AREAS: Record<Area, { title: string; intro: string; categoryName?: string 
   gabinete: {
     title: 'Gabinete ICOLVEN',
     intro: 'El espacio general del Instituto Colombo Venezolano para presentar proyectos, actividades y contenidos educativos.',
+    categoryName: 'Gabinete',
   },
 };
 
@@ -35,7 +36,7 @@ export function ProjectsPage({ area = 'all' }: { area?: Area }) {
     if (cfg.categoryName) {
       const cat = findCategoryByName(categories, cfg.categoryName);
       // Si la categoría aún no existe, el área se muestra vacía (no se cargan todos los registros).
-      if (!cat) return { categories, projects: [], posts: [], missingCategory: true };
+      if (!cat) return { categories, projects: [], posts: [], missingCategory: true, hasMore: false };
       categoryId = cat.id;
     }
     const rows = await listPublishedProjects({ categoryId, limit: PAGE_SIZE + 1, offset: page * PAGE_SIZE });
@@ -78,9 +79,9 @@ export function ProjectsPage({ area = 'all' }: { area?: Area }) {
         ) : (
           <>
             {(data.data?.projects ?? []).length === 0 ? (
-              <EmptyState title={data.data?.missingCategory ? 'Esta área aún no está configurada' : 'Todavía no hay proyectos aquí'}>
+              <EmptyState title={data.data?.missingCategory ? 'No hay proyectos asignados a esta área' : 'Todavía no hay proyectos aquí'}>
                 {data.data?.missingCategory
-                  ? 'Cuando el profesor cree la categoría y publique proyectos, los verás en esta página.'
+                  ? 'Asigna esta área a un proyecto desde el panel de Proyectos para que aparezca aquí.'
                   : 'Vuelve pronto: el profesor publicará nuevos proyectos.'}
               </EmptyState>
             ) : (
