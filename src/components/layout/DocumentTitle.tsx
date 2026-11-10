@@ -7,6 +7,7 @@ const TITLES: Record<string, string> = {
   '/etica': 'Ética',
   '/filosofia': 'Filosofía',
   '/gabinete': 'Gabinete',
+  '/acerca-de': 'Nuestra filosofía',
   '/publicaciones': 'Publicaciones',
   '/iniciar-sesion': 'Iniciar sesión',
   '/registro': 'Crear cuenta',

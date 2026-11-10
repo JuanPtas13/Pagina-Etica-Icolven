@@ -104,7 +104,7 @@ export function PublicLayout() {
         <div className="container footer__inner">
           <Brand />
           <nav className="footer__links" aria-label="Pie de página">
-            <Link to="/gabinete">Acerca de</Link>
+            <Link to="/acerca-de">Acerca de</Link>
             <Link to="/proyectos">Proyectos</Link>
             <Link to="/publicaciones">Publicaciones</Link>
           </nav>
@@ -112,6 +112,7 @@ export function PublicLayout() {
             <img src="/logo-icolven.jpg" alt="Colegio Adventista ICOLVEN, Medellín - Colombia" />
             <span>Colegio Adventista<br /><strong>ICOLVEN</strong></span>
           </div>
+          <p className="footer__signature">Made by Juan José Pinzón</p>
           <p className="footer__legal">Colegio Adventista ICOLVEN · Educación con propósito</p>
         </div>
       </footer>

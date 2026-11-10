@@ -12,6 +12,7 @@ import { LoginPage } from './pages/Auth/LoginPage';
 import { RegisterPage } from './pages/Auth/RegisterPage';
 import { AuthCallbackPage, ForgotPasswordPage, ResetPasswordPage } from './pages/Auth/RecoveryPages';
 import { NotFoundPage } from './pages/NotFound/NotFoundPage';
+import { AboutPage } from './pages/About/AboutPage';
 import { DashboardPage } from './pages/Admin/DashboardPage';
 import { ProjectsAdminPage } from './pages/Admin/ProjectsAdminPage';
 import { PostsAdminPage } from './pages/Admin/PostsAdminPage';
@@ -46,6 +47,7 @@ export default function App() {
         <Route path="etica" element={<ProjectsPage area="etica" />} />
         <Route path="filosofia" element={<ProjectsPage area="filosofia" />} />
         <Route path="gabinete" element={<ProjectsPage area="gabinete" />} />
+        <Route path="acerca-de" element={<AboutPage />} />
         <Route path="publicaciones" element={<PostsPage />} />
         <Route path="publicaciones/:id" element={<PostDetailPage />} />
         <Route path="*" element={<NotFoundPage />} />
